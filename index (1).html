@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Serverless Task App - Portfolio</title>
+    </head>
+<body>
+
+<div class="container" id="appContainer">
+    <h1>My Task Engine</h1>
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Enter task name...">
+        <input type="date" id="dateInput">
+        <button class="btn-add" onclick="addTask()">Add Task</button>
+    </div>
+    <ul id="taskList"></ul>
+</div>
+
+<script>
+    // --- SANITIZED CONFIGURATION ---
+    const API_URL = "https://YOUR_API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com";
+    const COGNITO_DOMAIN = "https://YOUR_COGNITO_DOMAIN.auth.us-east-1.amazoncognito.com";
+    const CLIENT_ID = "YOUR_COGNITO_CLIENT_ID";
+    const REDIRECT_URI = "https://YOUR_S3_BUCKET_URL/index.html";
+
+    const urlParams = new URLSearchParams(window.location.hash.substring(1));
+    let idToken = urlParams.get('id_token');
+
+    function login() { 
+        window.location.href = `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&response_type=token&scope=email+openid&redirect_uri=${REDIRECT_URI}`; 
+    }
+
+    async function loadTasks() {
+        const list = document.getElementById('taskList');
+        list.innerHTML = '<li>Loading...</li>';
+        try {
+            const response = await fetch(API_URL + "/tasks", { 
+                headers: { "Authorization": idToken } 
+            });
+            const data = await response.json();
+            list.innerHTML = '';
+            data.forEach(task => {
+                // Task rendering logic...
+            });
+        } catch (err) { 
+            list.innerHTML = '<li>Error loading tasks.</li>'; 
+        }
+    }
+    // ... rest of the CRUD functions remain the same
+</script>
+</body>
+</html>
